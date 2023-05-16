@@ -2,7 +2,9 @@ package models
 
 import (
 	"fmt"
+	"log"
 
+	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -11,6 +13,12 @@ import (
 var DB *gorm.DB
 
 func GetConnect() {
+
+	errEnv := godotenv.Load(".env")
+	if errEnv != nil {
+		log.Fatal("err env")
+		return
+	}
 
 	// create database manual terlebih dahulu
 	dsn := "root:rafi123@tcp(localhost:3306)/go_learning?charset=utf8mb4&parseTime=True&loc=Local"
