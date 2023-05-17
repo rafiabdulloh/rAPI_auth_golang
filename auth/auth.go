@@ -77,7 +77,7 @@ func LoginHandler(c *gin.Context, db *gorm.DB) {
 	}
 
 	PW = dataUser.Password
-	
+
 	c.JSON(200, gin.H{
 		"token": signedToken,
 	})

@@ -2,6 +2,7 @@ package main
 
 import (
 	usersControllers "auth_with_token/controllers"
+	"net/http"
 
 	"auth_with_token/models"
 
@@ -10,6 +11,9 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"auth_with_token/middleware"
+
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/session/cookie"
 )
 
 func main() {
@@ -17,9 +21,25 @@ func main() {
 	models.Seeder()
 
 	r := gin.Default()
+	store := sessions.NewCookieStore([]byte("secret"))
+	r.Use(sessions.Sessions("mysession", store))
 
 	r.POST("/login", func(ctx *gin.Context) {
 		auth.LoginHandler(ctx, models.DB)
+		username := ctx.PostForm("username")
+		// TODO: Lakukan validasi username dan password jika diperlukan
+
+		// Menyimpan username dalam session
+		session := sessions.Default(ctx)
+		session.Set("username", username)
+		errSess := session.Save()
+
+		if errSess != nil {
+			ctx.JSON(http.StatusOK, gin.H{"message": "Login Invalid"})
+			ctx.AbortWithStatus(http.StatusBadGateway)
+		} else {
+			ctx.JSON(http.StatusOK, gin.H{"message": "Login Success"})
+		}
 	})
 
 	r.GET("/user", middleware.AuthMiddleware, func(ctx *gin.Context) {
