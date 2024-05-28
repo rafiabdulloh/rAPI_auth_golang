@@ -12,27 +12,37 @@ import (
 
 	"auth_with_token/middleware"
 
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/session/cookie"
+	// "github.com/gorilla/securecookie"
+	
+	"github.com/gorilla/sessions"
 )
+
+var store = sessions.NewCookieStore([]byte("very-secret"), []byte("a-lot-secret"))
 
 func main() {
 	models.GetConnect()
 	models.Seeder()
 
 	r := gin.Default()
-	store := sessions.NewCookieStore([]byte("secret"))
-	r.Use(sessions.Sessions("mysession", store))
+	// store := sessions.NewCookieStore([]byte("secret"))
+	// Hash keys should be at least 32 bytes long
+	// Block keys should be 16 bytes (AES-128) or 32 bytes (AES-256) long.
+	// Shorter keys may weaken the encryption used.
+	r.Use(func(c *gin.Context) {
+        session, _ := store.Get(c.Request, "mysession")
+        c.Set("session", session)
+        c.Next()
+    })
 
 	r.POST("/login", func(ctx *gin.Context) {
 		auth.LoginHandler(ctx, models.DB)
 		username := ctx.PostForm("username")
-		// TODO: Lakukan validasi username dan password jika diperlukan
+		// TODO: Perform username and password validation if needed
 
-		// Menyimpan username dalam session
-		session := sessions.Default(ctx)
-		session.Set("username", username)
-		errSess := session.Save()
+		// Storing username in the session
+		session := ctx.MustGet("session").(*sessions.Session)
+		session.Values["username"] = username
+		errSess := session.Save(ctx.Request, ctx.Writer)
 
 		if errSess != nil {
 			ctx.JSON(http.StatusOK, gin.H{"message": "Login Invalid"})

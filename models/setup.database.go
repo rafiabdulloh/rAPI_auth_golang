@@ -21,7 +21,7 @@ func GetConnect() {
 	}
 
 	// create database manual terlebih dahulu
-	dsn := "root:rafi123@tcp(localhost:3306)/go_learning?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:rafi123@tcp(localhost:3308)/go_learning?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)
